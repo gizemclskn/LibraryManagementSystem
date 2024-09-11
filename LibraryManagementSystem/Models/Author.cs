@@ -12,6 +12,6 @@ namespace LibraryManagementSystem.Models
 
         [Required(ErrorMessage = "Doğum Tarihi zorunludur")]
         public DateTime BirthDate { get; set; }
-        public ICollection<Book> Books { get; set; }
+        public ICollection<Book> Books { get; set; } = new List<Book>();
     }
 }
