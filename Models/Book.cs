@@ -11,15 +11,14 @@ namespace LibraryManagementSystem.Models
         public string Title { get; set; }
 
         [Required(ErrorMessage = "Yayın Yılı zorunludur")]
+        [Range(1, int.MaxValue, ErrorMessage = "Yayın Yılı 0'dan büyük olmalıdır")]
         public int PublishedYear { get; set; }
 
         [Required(ErrorMessage = "Fiyat zorunludur")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Fiyat 0'dan büyük olmalıdır")]
         public decimal Price { get; set; }
 
-        // Yazar ile ilişki
-        [Required]
         public int AuthorId { get; set; }
-
         public Author Author { get; set; }
     }
 }

@@ -1,6 +1,10 @@
-﻿using LibraryManagementSystem.Interfaces;
+﻿using AutoMapper;
+using LibraryManagementSystem.DTO;
+using LibraryManagementSystem.Interfaces;
 using LibraryManagementSystem.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Controllers
 {
@@ -9,67 +13,78 @@ namespace LibraryManagementSystem.Controllers
     public class AuthorsController : ControllerBase
     {
         private readonly IAuthorRepository _authorRepository;
+        private readonly IMapper _mapper;
 
-        public AuthorsController(IAuthorRepository authorRepository)
+        public AuthorsController(IAuthorRepository authorRepository, IMapper mapper)
         {
             _authorRepository = authorRepository;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAuthors()
         {
             var authors = await _authorRepository.GetAllAuthors();
-            return Ok(authors);
+            var authorDtos = _mapper.Map<IEnumerable<AuthorDto>>(authors);
+            return Ok(authorDtos);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAuthor(int id)
         {
             var author = await _authorRepository.GetAuthorById(id);
-            if (author == null) return NotFound(new { message = "Yazar bulunamadı" });
-            return Ok(author);
+
+            if (author == null)
+            {
+                return NotFound(new { message = "Yazar bulunamadı" });
+            }
+
+            var authorDto = _mapper.Map<AuthorDto>(author);
+            return Ok(authorDto);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAuthor([FromBody] Author author)
+        public async Task<IActionResult> AddAuthor([FromBody] AuthorDto authorDto)
         {
-            if (author == null)
+            if (authorDto == null)
             {
-                return BadRequest(new { mesaj = "Yazar verisi boş olamaz" });
+                return BadRequest(new { message = "Yazar verisi boş olamaz" });
             }
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(new { mesaj = "Geçersiz yazar verisi", errors = ModelState });
+                return BadRequest(new { message = "Geçersiz yazar verisi", errors = ModelState });
             }
-            author.Books = new List<Book>();
 
+            var author = _mapper.Map<Author>(authorDto);
             await _authorRepository.AddAuthor(author);
-            return CreatedAtAction(nameof(GetAuthor), new { id = author.Id }, author);
+
+            // Dönüşte DTO'yu döndürmek yerine entitiye dönüş yaparak veriyi kontrol edebiliriz
+            var createdAuthorDto = _mapper.Map<AuthorDto>(author);
+            return CreatedAtAction(nameof(GetAuthor), new { id = author.Id }, createdAuthorDto);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAuthor(int id, Author author)
+        public async Task<IActionResult> UpdateAuthor(int id, [FromBody] AuthorDto authorDto)
         {
-            if (author == null)
+            if (authorDto == null)
             {
-                return BadRequest(new { mesaj = "Yazar verisi boş olamaz" });
-            }
-
-            if (id != author.Id)
-            {
-                return BadRequest(new { mesaj = "Yazar ID uyuşmazlığı" });
+                return BadRequest(new { message = "Yazar verisi boş olamaz" });
             }
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(new { mesaj = "Geçersiz yazar verisi", errors = ModelState });
+                return BadRequest(new { message = "Geçersiz yazar verisi", errors = ModelState });
             }
 
+            var author = _mapper.Map<Author>(authorDto);
+            author.Id = id;
+
+            // Verinin güncellenip güncellenmediğini kontrol et
             var existingAuthor = await _authorRepository.GetAuthorById(id);
             if (existingAuthor == null)
             {
-                return NotFound(new { mesaj = "Yazar bulunamadı" });
+                return NotFound(new { message = "Güncellenecek yazar bulunamadı" });
             }
 
             await _authorRepository.UpdateAuthor(author);
@@ -79,16 +94,12 @@ namespace LibraryManagementSystem.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAuthor(int id)
         {
-            var author = await _authorRepository.GetAuthorById(id);
-            if (author == null)
+            var existingAuthor = await _authorRepository.GetAuthorById(id);
+            if (existingAuthor == null)
             {
-                return NotFound(new { mesaj = "Yazar bulunamadı" });
+                return NotFound(new { message = "Silinecek yazar bulunamadı" });
             }
 
-            if (author.Books.Any())
-            {
-                return BadRequest("Yazar silinemez çünkü yazara ait kayıtlı kitapları var.");
-            }
             await _authorRepository.DeleteAuthor(id);
             return NoContent();
         }

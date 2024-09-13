@@ -1,5 +1,4 @@
-﻿using LibraryManagementSystem.DTO;
-using LibraryManagementSystem.Models;
+﻿using LibraryManagementSystem.Models;
 
 namespace LibraryManagementSystem.Interfaces
 {

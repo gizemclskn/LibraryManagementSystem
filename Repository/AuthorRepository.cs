@@ -2,8 +2,6 @@
 using LibraryManagementSystem.Interfaces;
 using LibraryManagementSystem.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LibraryManagementSystem.Repository
 {
@@ -18,12 +16,12 @@ namespace LibraryManagementSystem.Repository
 
         public async Task<IEnumerable<Author>> GetAllAuthors()
         {
-            return await _context.Authors.ToListAsync();
+            return await _context.Authors.Include(a => a.Books).ToListAsync();
         }
 
         public async Task<Author> GetAuthorById(int id)
         {
-            return await _context.Authors.FindAsync(id);
+            return await _context.Authors.Include(a => a.Books).FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task AddAuthor(Author author)
@@ -34,18 +32,15 @@ namespace LibraryManagementSystem.Repository
 
         public async Task UpdateAuthor(Author author)
         {
-            _context.Authors.Update(author);
+            _context.Entry(author).State = EntityState.Modified;
             await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAuthor(int id)
         {
             var author = await _context.Authors.FindAsync(id);
-            if (author != null)
-            {
-                _context.Authors.Remove(author);
-                await _context.SaveChangesAsync();
-            }
+            _context.Authors.Remove(author);
+            await _context.SaveChangesAsync();
         }
     }
 }

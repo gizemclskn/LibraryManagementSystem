@@ -1,13 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LibraryManagementSystem.Models
+namespace LibraryManagementSystem.DTO
 {
-    public class Book
+    public class BookDto
     {
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Başlık zorunludur")]
-        [StringLength(200, ErrorMessage = "Başlık 200 karakterden uzun olmamalıdır")]
         public string Title { get; set; }
 
         [Required(ErrorMessage = "Yayın Yılı zorunludur")]
@@ -16,10 +15,7 @@ namespace LibraryManagementSystem.Models
         [Required(ErrorMessage = "Fiyat zorunludur")]
         public decimal Price { get; set; }
 
-        // Yazar ile ilişki
-        [Required]
+        // Author bilgisi yalnızca Id olarak gelir
         public int AuthorId { get; set; }
-
-        public Author Author { get; set; }
     }
 }

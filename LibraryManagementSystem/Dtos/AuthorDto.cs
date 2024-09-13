@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace LibraryManagementSystem.Models
+namespace LibraryManagementSystem.DTO
 {
-    public class Author
+    public class AuthorDto
     {
         public int Id { get; set; }
 
@@ -15,6 +15,7 @@ namespace LibraryManagementSystem.Models
         [Required(ErrorMessage = "Doğum Tarihi zorunludur")]
         public DateTime BirthDate { get; set; }
 
-        public ICollection<Book> Books { get; set; }
+        // DTO olarak kitaplar
+     //   public ICollection<BookDto> Books { get; set; }
     }
 }
